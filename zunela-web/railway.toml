@@ -1,11 +1,10 @@
-# En Railway: Settings → Root Directory = zunela-web
-# Settings → Config as Code → /zunela-web/railway.toml (si no lo detecta solo)
+# Si Root Directory = zunela-web, apunta Config as Code a /railway.toml en la raíz
+# o usa el Dockerfile de la raíz del repo con Root Directory vacío.
 [build]
-builder = "RAILPACK"
-buildCommand = "npm ci && npm run build"
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "npm run start"
 healthcheckPath = "/"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
