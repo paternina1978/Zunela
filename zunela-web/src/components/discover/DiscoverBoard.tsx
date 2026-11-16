@@ -116,8 +116,10 @@ export function DiscoverBoard() {
         return;
       }
 
+      // En Supabase no mezclar el catálogo demo (Laura, Camila, etc.): solo gente/contenido real.
+      const remote = remoteIdentityAvailable();
       const listed = [
-        ...CATALOG,
+        ...(remote ? [] : CATALOG),
         ...remotePeople,
         ...readOwnOpportunities().map(ownOpportunityEntry),
         ...listCachedRemoteOpportunities().map(ownOpportunityEntry),

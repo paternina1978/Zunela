@@ -936,7 +936,10 @@ function InvitationList({
   onInvite: () => void;
 }) {
   const blocked = new Set(readBlockedIds());
-  const people = [...CATALOG, ...listCachedRemotePeople()]
+  const people = [
+    ...(remoteIdentityAvailable() ? [] : CATALOG),
+    ...listCachedRemotePeople(),
+  ]
     .filter((entry) => entry.kind === "persona" && !blocked.has(entry.id))
     .filter((entry, index, all) => all.findIndex((row) => row.id === entry.id) === index);
   const invited = invitedIds
