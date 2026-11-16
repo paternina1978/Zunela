@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0b7a76" />
+    <title>Sin conexión — ZUNELA</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --navy: #07151f;
+        --teal: #0b7a76;
+        --cream: #f3efe6;
+        --muted: #5b6b75;
+        --card: #fffdf8;
+        --line: rgba(7, 21, 31, 0.12);
+        --gold: #b08a3c;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        font-family: "Segoe UI", Tahoma, sans-serif;
+        background:
+          radial-gradient(circle at top left, rgba(11, 122, 118, 0.12), transparent 40%),
+          linear-gradient(180deg, #f7f3ea, var(--cream));
+        color: var(--navy);
+      }
+      main {
+        width: min(100%, 420px);
+        border: 1px solid rgba(176, 138, 60, 0.35);
+        border-radius: 28px;
+        background: var(--card);
+        box-shadow: 0 18px 40px rgba(7, 21, 31, 0.08);
+        padding: 28px;
+      }
+      img {
+        width: 112px;
+        height: auto;
+      }
+      p.eyebrow {
+        margin: 20px 0 0;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--gold);
+      }
+      h1 {
+        margin: 8px 0 0;
+        font-size: 2rem;
+        line-height: 1.15;
+      }
+      p.copy {
+        margin: 12px 0 0;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        color: var(--muted);
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 20px;
+      }
+      a {
+        display: inline-flex;
+        align-items: center;
+        height: 44px;
+        padding: 0 16px;
+        border-radius: 12px;
+        background: var(--teal);
+        color: white;
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+      a.secondary {
+        background: transparent;
+        border: 1px solid var(--line);
+        color: var(--navy);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <img src="/logo-zunela.png" alt="ZUNELA" width="1002" height="795" />
+      <p class="eyebrow">Sin conexión</p>
+      <h1>ZUNELA sigue en este navegador</h1>
+      <p class="copy">
+        No hay red ahora. Si ya visitaste Descubrir, Matches o Cuenta, esas rutas pueden
+        abrirse desde la caché. Los envíos esperan conexión.
+      </p>
+      <div class="actions">
+        <a href="/">Reintentar</a>
+        <a class="secondary" href="/descubrir">Descubrir</a>
+        <a class="secondary" href="/matches">Matches</a>
+        <a class="secondary" href="/cuenta">Cuenta</a>
+      </div>
+    </main>
+  </body>
+</html>

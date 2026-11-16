@@ -1,0 +1,100 @@
+@import "tailwindcss";
+
+:root {
+  --navy: #07151f;
+  --navy-soft: #123043;
+  --teal: #0b7a76;
+  --teal-deep: #08625f;
+  --gold: #c9a44a;
+  --gold-soft: #e8d7a6;
+  --cream: #f7f3eb;
+  --cream-deep: #efe8da;
+  --ink: #0d1b26;
+  --muted: #5d6c76;
+  --line: rgba(7, 21, 31, 0.1);
+  --danger: #9b3b32;
+  --card: #fffcf7;
+}
+
+@theme inline {
+  --color-navy: var(--navy);
+  --color-navy-soft: var(--navy-soft);
+  --color-teal: var(--teal);
+  --color-teal-deep: var(--teal-deep);
+  --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
+  --color-cream: var(--cream);
+  --color-cream-deep: var(--cream-deep);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-danger: var(--danger);
+  --color-card: var(--card);
+  --font-sans: var(--font-outfit);
+  --font-display: var(--font-fraunces);
+}
+
+html {
+  background: var(--cream);
+}
+
+body {
+  background: var(--cream);
+  color: var(--ink);
+  font-family: var(--font-outfit), sans-serif;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--gold) 35%, white);
+  color: var(--navy);
+}
+
+@keyframes orbit-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes orbit-spin-reverse {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes fade-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.orbit-slow {
+  animation: orbit-spin 48s linear infinite;
+}
+
+.orbit-slower {
+  animation: orbit-spin-reverse 72s linear infinite;
+}
+
+.rise-in {
+  animation: fade-rise 0.7s ease-out both;
+}
+
+.grain {
+  pointer-events: none;
+  background-image: radial-gradient(
+    rgba(7, 21, 31, 0.045) 0.6px,
+    transparent 0.6px
+  );
+  background-size: 3px 3px;
+}
