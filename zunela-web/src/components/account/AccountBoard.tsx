@@ -99,10 +99,13 @@ export function AccountBoard() {
 
   async function loadNotices() {
     await refreshRemoteNotices();
-    for (const personId of readMatchBook().incoming) {
-      const name = findCatalogEntry(personId)?.title;
-      if (name) {
-        recordNotice("match", `${name} te envió interés.`, `match-in-${personId}`);
+    // Solo local: no inventar avisos de personas demo del catálogo en Supabase.
+    if (!remoteIdentityAvailable()) {
+      for (const personId of readMatchBook().incoming) {
+        const name = findCatalogEntry(personId)?.title;
+        if (name) {
+          recordNotice("match", `${name} te envió interés.`, `match-in-${personId}`);
+        }
       }
     }
     await refreshRemoteNotices();

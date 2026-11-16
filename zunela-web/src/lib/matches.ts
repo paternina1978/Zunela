@@ -1,7 +1,8 @@
 import { readAdminParams } from "@/lib/admin";
 import { clearContactGrant } from "@/lib/contact-store";
 import { revokeRemoteContact } from "@/lib/remote/contacts";
-import { findCatalogEntry, readSentInterest, saveSentInterest } from "@/lib/discover";
+import { readBackendMode } from "@/lib/backend-mode";
+import { findCatalogEntry, isDemoCatalogId, readSentInterest, saveSentInterest } from "@/lib/discover";
 import { remoteAuthUserId } from "@/lib/remote/catalog";
 import { notifyOtherUserAsync, recordNotice, recordNoticeAsync } from "@/lib/notices";
 import { readProfile } from "@/lib/profile";
@@ -24,7 +25,19 @@ import { canUseBrowserStorage, readDurable, writeDurable } from "@/lib/storage";
 const MATCH_KEY = "zunela.matches";
 const DAY_MS = 24 * 60 * 60 * 1000;
 
+/** Solo demo local. */
 const SAMPLE_INCOMING = ["valentina-ruiz", "andres-molina"];
+
+function allowDemoMatches() {
+  return readBackendMode() === "local";
+}
+
+function stripDemoIds(ids: string[]) {
+  if (allowDemoMatches()) {
+    return ids;
+  }
+  return ids.filter((id) => !isDemoCatalogId(id) && !SAMPLE_INCOMING.includes(id));
+}
 
 export type MatchBook = {
   incoming: string[];
@@ -72,6 +85,10 @@ export function readMatchBook(): MatchBook {
   }
   const raw = readDurable(MATCH_KEY);
   if (!raw) {
+    if (!allowDemoMatches()) {
+      writeDurable(MATCH_KEY, JSON.stringify(EMPTY_BOOK));
+      return mergeWithRemote(EMPTY_BOOK);
+    }
     const now = new Date().toISOString();
     const seeded: MatchBook = {
       incoming: [...SAMPLE_INCOMING],
@@ -86,7 +103,7 @@ export function readMatchBook(): MatchBook {
   }
   try {
     const parsed = JSON.parse(raw) as Partial<MatchBook>;
-    const book: MatchBook = {
+    let book: MatchBook = {
       incoming: asIds(parsed.incoming),
       accepted: asIds(parsed.accepted),
       declined: asIds(parsed.declined),
@@ -94,6 +111,25 @@ export function readMatchBook(): MatchBook {
       expired: asIds(parsed.expired),
       pendingAt: asPendingMap(parsed.pendingAt),
     };
+    if (!allowDemoMatches()) {
+      const cleaned: MatchBook = {
+        incoming: stripDemoIds(book.incoming),
+        accepted: stripDemoIds(book.accepted),
+        declined: stripDemoIds(book.declined),
+        blocked: stripDemoIds(book.blocked),
+        expired: stripDemoIds(book.expired),
+        pendingAt: Object.fromEntries(
+          Object.entries(book.pendingAt).filter(([id]) => !isDemoCatalogId(id)),
+        ),
+      };
+      if (
+        cleaned.incoming.length !== book.incoming.length ||
+        cleaned.accepted.length !== book.accepted.length
+      ) {
+        writeDurable(MATCH_KEY, JSON.stringify(cleaned));
+      }
+      book = cleaned;
+    }
     return mergeWithRemote(expirePending(ensurePendingStarts(book)));
   } catch {
     return mergeWithRemote(EMPTY_BOOK);

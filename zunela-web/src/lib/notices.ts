@@ -1,4 +1,6 @@
 import { readAccount } from "@/lib/account";
+import { readBackendMode } from "@/lib/backend-mode";
+import { isDemoCatalogId } from "@/lib/discover";
 import { remoteIdentityAvailable } from "@/lib/remote/identity";
 import {
   clearRemoteNotices,
@@ -203,11 +205,25 @@ export function kindEnabled(kind: NoticeKind) {
   return notifications.communities;
 }
 
-function readMerged(): Notice[] {
-  if (remoteIdentityAvailable()) {
-    return peekRemoteNotices();
+function isDemoNotice(item: Notice) {
+  if (readBackendMode() === "local") {
+    return false;
   }
-  return readLocalAll();
+  const source = item.source || "";
+  if (/^(match-in-|mensaje-seed-)/.test(source)) {
+    const id = source.replace(/^(match-in-|mensaje-seed-)/, "");
+    if (isDemoCatalogId(id) || id === "valentina-ruiz" || id === "andres-molina") {
+      return true;
+    }
+  }
+  return /Andrés Molina|Valentina Ruiz|Laura Gómez|Camila Restrepo|Julián Castro|Diana Mejía|Juan Ortiz/i.test(
+    item.text,
+  );
+}
+
+function readMerged(): Notice[] {
+  const items = remoteIdentityAvailable() ? peekRemoteNotices() : readLocalAll();
+  return items.filter((item) => !isDemoNotice(item));
 }
 
 function readLocalAll(): Notice[] {
