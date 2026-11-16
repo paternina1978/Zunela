@@ -11,7 +11,7 @@ import {
   publishRemoteCommunityPost,
   sendRemoteCommunityMessage,
 } from "@/lib/remote/community-content";
-import { isRemoteBackendEnabled } from "@/lib/backend-mode";
+import { isRemoteBackendEnabled, readBackendMode } from "@/lib/backend-mode";
 import { remoteIdentityAvailable } from "@/lib/remote/identity";
 import { readDurable, writeDurable } from "@/lib/storage";
 
@@ -462,9 +462,13 @@ export const CATALOG: CatalogEntry[] = [
 
 const DEMO_CATALOG_IDS = new Set(CATALOG.map((entry) => entry.id));
 
-/** Vacío con Supabase: el piloto cloud no debe mostrar Laura/Camila/etc. */
+/**
+ * Catálogo demo solo en modo local.
+ * Si BACKEND=supabase (piloto cloud), nunca listar Laura/Camila/etc.,
+ * aunque falten claves en el build (eso antes dejaba ver demos por error).
+ */
 export function listedCatalog(): CatalogEntry[] {
-  if (isRemoteBackendEnabled()) {
+  if (readBackendMode() !== "local") {
     return [];
   }
   return CATALOG;
@@ -527,7 +531,7 @@ export function scoreCatalog(entry: CatalogEntry, affinity: AffinityDraft, city:
 }
 
 export function findCatalogEntry(id: string) {
-  if (isRemoteBackendEnabled() && isDemoCatalogId(id)) {
+  if (readBackendMode() !== "local" && isDemoCatalogId(id)) {
     return null;
   }
   return CATALOG.find((entry) => entry.id === id) ?? null;
