@@ -29,4 +29,5 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 USER nextjs
 EXPOSE 3000
-CMD ["node", "server.js"]
+# Railway inyecta PORT; Next standalone escucha ahí con HOSTNAME=0.0.0.0
+CMD ["sh", "-c", "node server.js"]
