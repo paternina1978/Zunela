@@ -2,8 +2,13 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { isRemoteBackendEnabled } from "@/lib/backend-mode";
+import {
+  ensureRemoteVisibleNameFromAuth,
+  remoteCurrentUser,
+} from "@/lib/remote/identity";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { saveSession } from "@/lib/session";
 
 /**
  * Destino de enlaces Auth (confirmación de correo / recuperación).
@@ -51,6 +56,11 @@ function AuthCallbackInner() {
         }
       }
 
+      await ensureRemoteVisibleNameFromAuth();
+      const user = await remoteCurrentUser();
+      if (user) {
+        saveSession(user);
+      }
       setMessage("Listo. Continuamos…");
       router.replace("/perfil");
     }

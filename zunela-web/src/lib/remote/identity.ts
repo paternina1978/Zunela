@@ -55,6 +55,64 @@ export async function remoteLogin(email: string, password: string): Promise<stri
   return error ? error.message : null;
 }
 
+export type RemoteOAuthProvider = "google" | "apple" | "github" | "facebook" | "azure";
+
+/** Redirige al proveedor OAuth (Google/Gmail, etc.). Requiere el provider activo en Supabase. */
+export async function remoteSignInWithOAuth(
+  provider: RemoteOAuthProvider,
+): Promise<string | null> {
+  const client = getSupabaseBrowserClient();
+  if (!client) {
+    return "El backend remoto no está configurado.";
+  }
+  const redirectTo =
+    typeof window !== "undefined" ? `${window.location.origin}/auth/callback` : undefined;
+  const { error } = await client.auth.signInWithOAuth({
+    provider,
+    options: {
+      redirectTo,
+      queryParams:
+        provider === "google"
+          ? {
+              access_type: "offline",
+              prompt: "select_account",
+            }
+          : undefined,
+    },
+  });
+  return error ? error.message : null;
+}
+
+/** Completa nombre visible tras OAuth si el perfil quedó vacío. */
+export async function ensureRemoteVisibleNameFromAuth(): Promise<void> {
+  const client = getSupabaseBrowserClient();
+  if (!client) {
+    return;
+  }
+  const {
+    data: { user },
+  } = await client.auth.getUser();
+  if (!user) {
+    return;
+  }
+  const { data: profile } = await client
+    .from("profiles")
+    .select("visible_name")
+    .eq("id", user.id)
+    .maybeSingle();
+  const current =
+    typeof profile?.visible_name === "string" ? profile.visible_name.trim() : "";
+  if (current) {
+    return;
+  }
+  const meta = user.user_metadata ?? {};
+  const fromMeta = [meta.visible_name, meta.full_name, meta.name, meta.preferred_username]
+    .find((value) => typeof value === "string" && value.trim().length >= 2);
+  const fallback = user.email?.split("@")[0]?.trim() || "Persona";
+  const visibleName = (typeof fromMeta === "string" ? fromMeta : fallback).trim().slice(0, 80);
+  await client.from("profiles").update({ visible_name: visibleName }).eq("id", user.id);
+}
+
 export async function remoteSignOut(): Promise<string | null> {
   const client = getSupabaseBrowserClient();
   if (!client) {
