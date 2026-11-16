@@ -13,7 +13,7 @@ import {
 import { EMPTY_AFFINITY, foldText, readAffinity, type Modality } from "@/lib/affinity";
 import { catalogInterestLabels, readGoalOptions, refreshRemoteCatalogs } from "@/lib/catalog";
 import {
-  CATALOG,
+  listedCatalog,
   isPublicField,
   readSentInterest,
   saveSentInterest,
@@ -116,10 +116,8 @@ export function DiscoverBoard() {
         return;
       }
 
-      // En Supabase no mezclar el catálogo demo (Laura, Camila, etc.): solo gente/contenido real.
-      const remote = remoteIdentityAvailable();
       const listed = [
-        ...(remote ? [] : CATALOG),
+        ...listedCatalog(),
         ...remotePeople,
         ...readOwnOpportunities().map(ownOpportunityEntry),
         ...listCachedRemoteOpportunities().map(ownOpportunityEntry),

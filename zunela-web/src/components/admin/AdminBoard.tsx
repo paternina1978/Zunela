@@ -49,7 +49,7 @@ import {
   resetCatalogsAsync,
   type CatalogKind,
 } from "@/lib/catalog";
-import { CATALOG } from "@/lib/discover";
+import { listedCatalog } from "@/lib/discover";
 import {
   approveOwnOpportunityAsync,
   listCachedRemoteOpportunities,
@@ -167,13 +167,15 @@ export function AdminBoard() {
     const session = readSession();
     const access = readAccess();
     const profile = readProfile();
-    let people: AdminUser[] = CATALOG.filter((entry) => entry.kind === "persona").map((person) => ({
-      id: person.id,
-      name: person.title,
-      detail: `${person.subtitle} · ${person.city}`,
-      suspended: suspended.has(person.id),
-      current: false,
-    }));
+    let people: AdminUser[] = listedCatalog()
+      .filter((entry) => entry.kind === "persona")
+      .map((person) => ({
+        id: person.id,
+        name: person.title,
+        detail: `${person.subtitle} · ${person.city}`,
+        suspended: suspended.has(person.id),
+        current: false,
+      }));
     if (remoteIdentityAvailable()) {
       const me = await remoteAuthUserId();
       const remotePeople = await listRemotePeople(me, { includeSuspended: true });
@@ -364,8 +366,8 @@ export function AdminBoard() {
   const interests = catalogInterestLabels();
   const goals = readGoalOptions();
   const offers = readOfferOptions();
-  const opportunities = CATALOG.filter((entry) => entry.kind === "oportunidad");
-  const communities = CATALOG.filter((entry) => entry.kind === "comunidad");
+  const opportunities = listedCatalog().filter((entry) => entry.kind === "oportunidad");
+  const communities = listedCatalog().filter((entry) => entry.kind === "comunidad");
   void catalogTick;
 
   async function submitCatalogItem() {

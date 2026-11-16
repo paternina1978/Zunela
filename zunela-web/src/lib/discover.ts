@@ -11,6 +11,7 @@ import {
   publishRemoteCommunityPost,
   sendRemoteCommunityMessage,
 } from "@/lib/remote/community-content";
+import { isRemoteBackendEnabled } from "@/lib/backend-mode";
 import { remoteIdentityAvailable } from "@/lib/remote/identity";
 import { readDurable, writeDurable } from "@/lib/storage";
 
@@ -103,6 +104,10 @@ const EMPTY_SENT: SentInterest = {
   roles: {},
 };
 
+/**
+ * Catálogo demo (local). En Supabase no se lista: usa `listedCatalog()`.
+ * Se mantiene exportado para demos offline y lookups de ciudad.
+ */
 export const CATALOG: CatalogEntry[] = [
   {
     id: "laura-gomez",
@@ -455,6 +460,20 @@ export const CATALOG: CatalogEntry[] = [
   },
 ];
 
+const DEMO_CATALOG_IDS = new Set(CATALOG.map((entry) => entry.id));
+
+/** Vacío con Supabase: el piloto cloud no debe mostrar Laura/Camila/etc. */
+export function listedCatalog(): CatalogEntry[] {
+  if (isRemoteBackendEnabled()) {
+    return [];
+  }
+  return CATALOG;
+}
+
+export function isDemoCatalogId(id: string) {
+  return DEMO_CATALOG_IDS.has(id);
+}
+
 export function scoreCatalog(entry: CatalogEntry, affinity: AffinityDraft, city: string): ScoredEntry {
   const sharedInterests = overlap(affinity.interests, entry.interests);
   const complementary = overlap(affinity.goals, entry.offers);
@@ -508,6 +527,9 @@ export function scoreCatalog(entry: CatalogEntry, affinity: AffinityDraft, city:
 }
 
 export function findCatalogEntry(id: string) {
+  if (isRemoteBackendEnabled() && isDemoCatalogId(id)) {
+    return null;
+  }
   return CATALOG.find((entry) => entry.id === id) ?? null;
 }
 

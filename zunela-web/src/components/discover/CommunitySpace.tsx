@@ -13,7 +13,7 @@ import { recordProductEvent } from "@/lib/product-events";
 import { EMPTY_AFFINITY, readAffinity } from "@/lib/affinity";
 import {
   blockedCommunityText,
-  CATALOG,
+  listedCatalog,
   findCatalogEntry,
   publishCommunityPostAsync,
   readCommunityChatAsync,
@@ -936,10 +936,7 @@ function InvitationList({
   onInvite: () => void;
 }) {
   const blocked = new Set(readBlockedIds());
-  const people = [
-    ...(remoteIdentityAvailable() ? [] : CATALOG),
-    ...listCachedRemotePeople(),
-  ]
+  const people = [...listedCatalog(), ...listCachedRemotePeople()]
     .filter((entry) => entry.kind === "persona" && !blocked.has(entry.id))
     .filter((entry, index, all) => all.findIndex((row) => row.id === entry.id) === index);
   const invited = invitedIds
