@@ -1,6 +1,7 @@
-# Despliegue Railway: Root Directory = zunela-web
+# En Railway: Settings → Root Directory = zunela-web
+# Settings → Config as Code → /zunela-web/railway.toml (si no lo detecta solo)
 [build]
-builder = "NIXPACKS"
+builder = "RAILPACK"
 buildCommand = "npm ci && npm run build"
 
 [deploy]
