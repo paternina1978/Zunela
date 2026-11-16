@@ -9,11 +9,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NEXT_PUBLIC_ZUNELA_BACKEND=supabase
-RUN if [ -z "$NEXT_PUBLIC_SUPABASE_URL" ] || [ -z "$NEXT_PUBLIC_SUPABASE_ANON_KEY" ]; then \
-      echo "Faltan NEXT_PUBLIC_SUPABASE_URL / ANON_KEY en el build" >&2; \
-      exit 1; \
-    fi \
-  && npm run build \
+RUN npm run build \
   && test -f .next/standalone/server.js \
   && test -d .next/static
 

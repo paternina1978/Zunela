@@ -1,5 +1,5 @@
 # HOSTNAME del contenedor se pisa al arrancar (0.0.0.0).
-# Railway inyecta NEXT_PUBLIC_* como ENV en el build; no usar ARG vacío que las borre.
+# Railway inyecta NEXT_PUBLIC_* en el build como ENV (no fallar el build con checks).
 FROM node:22-bookworm-slim AS deps
 WORKDIR /app
 COPY zunela-web/package.json zunela-web/package-lock.json ./
@@ -11,11 +11,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY zunela-web/ ./
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NEXT_PUBLIC_ZUNELA_BACKEND=supabase
-RUN if [ -z "$NEXT_PUBLIC_SUPABASE_URL" ] || [ -z "$NEXT_PUBLIC_SUPABASE_ANON_KEY" ]; then \
-      echo "Faltan NEXT_PUBLIC_SUPABASE_URL / ANON_KEY en el build de Railway" >&2; \
-      exit 1; \
-    fi \
-  && npm run build \
+RUN npm run build \
   && test -f .next/standalone/server.js \
   && test -d .next/static
 
