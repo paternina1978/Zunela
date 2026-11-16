@@ -1,55 +1,23 @@
-# Acceso social (Google / Gmail y otros)
+# Acceso social (Google / Gmail y otros) — PAUSADO
 
-La app ya tiene el botón **Continuar con Google**. Hay que activar el proveedor en Google Cloud y en Supabase.
+**Estado:** pausado. Google Cloud pide tarjeta / verificación de crédito para crear el cliente OAuth y no aplica al piloto ahora.
 
-## 1. Google Cloud Console
+El acceso sigue por **correo + contraseña** (y recuperación). El botón «Continuar con Google» no se muestra en la UI.
 
-1. Entra a [Google Cloud Console](https://console.cloud.google.com/).
-2. Crea o elige un proyecto.
-3. **APIs y servicios → Pantalla de consentimiento OAuth** → External → guarda (app en prueba está bien para el piloto).
-4. **APIs y servicios → Credenciales → Crear credenciales → ID de cliente OAuth**.
-5. Tipo: **Aplicación web**.
-6. **URI de redirección autorizados** (añade ambos):
+El helper `remoteSignInWithOAuth` en `zunela-web/src/lib/remote/identity.ts` queda listo para reactivar más adelante.
+
+## Cuando se retome
+
+1. Google Cloud → OAuth client (Aplicación web) con redirect:
 
 ```text
 https://lseadxgeffktdnqgknhd.supabase.co/auth/v1/callback
-http://127.0.0.1:54321/auth/v1/callback
 ```
 
-7. Copia **Client ID** y **Client Secret**.
-
-## 2. Supabase (proyecto Zunela)
-
-1. **Authentication → Providers → Google** → Enable.
-2. Pega Client ID y Client Secret → Save.
-3. **Authentication → URL Configuration** (ya lo tienes casi):
-   - Site URL: `https://zunela-production.up.railway.app`
-   - Redirect URLs:
-     - `https://zunela-production.up.railway.app/**`
-     - `https://zunela-production.up.railway.app/auth/callback`
-
-## 3. Probar
-
-1. Espera el deploy de Railway con el botón Google.
-2. Abre la app → **Continuar con Google**.
-3. Elige la cuenta Gmail → vuelve a `/auth/callback` → perfil.
+2. Supabase → Authentication → Providers → Google → Client ID + Secret → Enable.
+3. Volver a mostrar el botón en `AuthCard` (mismo patrón que el commit de OAuth).
+4. Redirect URLs de la app: `https://zunela-production.up.railway.app/auth/callback`
 
 ## Otros proveedores
 
-Misma idea en **Authentication → Providers**:
-
-| Proveedor | Uso típico |
-|-----------|------------|
-| Google | Gmail / cuentas Google |
-| Apple | iPhone / App Store |
-| Azure (Microsoft) | Outlook / Hotmail / trabajo |
-| Facebook | opcional |
-| GitHub | más técnico |
-
-En código ya existe `remoteSignInWithOAuth("apple" | "azure" | …)`; solo hay que activar el provider en Supabase y añadir el botón en `AuthCard` cuando lo quieras.
-
-## Notas
-
-- El correo/contraseña sigue disponible («o con correo»).
-- No expongas Client Secret en la app: solo en Supabase.
-- En modo local (sin Supabase) el botón Google no aparece.
+Apple, Microsoft, etc.: misma idea en Supabase Providers; no requieren Google Cloud, pero cada uno tiene su consola y a veces costo o requisitos distintos.

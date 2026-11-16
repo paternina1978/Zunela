@@ -14,7 +14,6 @@ import {
   remoteLogin,
   remoteRegister,
   remoteRequestPasswordReset,
-  remoteSignInWithOAuth,
 } from "@/lib/remote/identity";
 import { saveSession } from "@/lib/session";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
@@ -240,28 +239,6 @@ export function AuthCard() {
     }
   }
 
-  async function continueWithGoogle() {
-    if (!remote) {
-      return;
-    }
-    if (!online) {
-      setFormError(offlineWriteMessage());
-      return;
-    }
-    if (mode === "register" && !form.consent) {
-      setErrors({ consent: "Necesitas aceptar las políticas para continuar con Google." });
-      return;
-    }
-    setFormError("");
-    setIsSubmitting(true);
-    const reason = await remoteSignInWithOAuth("google");
-    if (reason) {
-      setFormError(reason);
-      setIsSubmitting(false);
-    }
-    // Si OK, el navegador redirige a Google; no resetear submitting.
-  }
-
   return (
     <section className="rise-in order-2 flex items-center px-6 py-4 sm:px-10 lg:order-none lg:py-16">
       <div className="w-full rounded-[28px] border border-gold/35 bg-card/95 p-5 shadow-[0_24px_60px_rgba(7,21,31,0.12)] backdrop-blur-md sm:p-7">
@@ -294,53 +271,6 @@ export function AuthCard() {
             </p>
             <h2 className="mt-2 font-display text-3xl text-navy">{title}</h2>
             <p className="mt-2 text-sm leading-6 text-muted">{subtitle}</p>
-
-            {remote && mode === "register" ? (
-              <div className="mt-5">
-                <label className="flex items-start gap-3 text-sm leading-6 text-muted">
-                  <input
-                    type="checkbox"
-                    checked={form.consent}
-                    onChange={(event) => update("consent", event.target.checked)}
-                    className="mt-1 size-4 rounded border-line text-teal accent-teal"
-                  />
-                  <span>
-                    Acepto los{" "}
-                    <LegalButton onClick={() => setLegalTopic("terminos")}>Términos de uso</LegalButton>{" "}
-                    y la{" "}
-                    <LegalButton onClick={() => setLegalTopic("privacidad")}>
-                      Política de privacidad
-                    </LegalButton>
-                    . Mis contactos no se mostrarán sin mi permiso.
-                  </span>
-                </label>
-                {errors.consent ? (
-                  <p className="mt-1.5 text-xs text-danger">{errors.consent}</p>
-                ) : null}
-              </div>
-            ) : null}
-
-            {remote && (mode === "login" || mode === "register") ? (
-              <div className="mt-5 space-y-3">
-                <button
-                  type="button"
-                  onClick={() => void continueWithGoogle()}
-                  disabled={isSubmitting || !online}
-                  className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-line bg-white text-sm font-semibold text-navy transition-colors hover:border-teal hover:text-teal disabled:opacity-50"
-                >
-                  Continuar con Google
-                </button>
-                <p className="text-center text-xs leading-5 text-muted">
-                  Gmail y cuentas Google. Apple, Microsoft u otros se habilitan en Supabase Auth cuando
-                  los configures.
-                </p>
-                <div className="flex items-center gap-3 text-[11px] font-semibold tracking-[0.18em] text-muted uppercase">
-                  <span className="h-px flex-1 bg-line" />
-                  o con correo
-                  <span className="h-px flex-1 bg-line" />
-                </div>
-              </div>
-            ) : null}
 
             <form className="mt-5 space-y-3.5" onSubmit={handleSubmit} noValidate>
               {mode === "register" ? (
@@ -423,7 +353,7 @@ export function AuthCard() {
                 />
               ) : null}
 
-              {mode === "register" && !remote ? (
+              {mode === "register" ? (
                 <div>
                   <label className="flex items-start gap-3 text-sm leading-6 text-muted">
                     <input
