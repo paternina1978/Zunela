@@ -3,6 +3,7 @@ import { readDurable, writeDurable } from "@/lib/storage";
 
 const PROFILE_KEY = "zunela.profile";
 const CUSTOM_PROFESSIONS_KEY = "zunela.custom-professions";
+const CUSTOM_CITIES_KEY = "zunela.custom-cities";
 
 export type FieldVisibility = "public" | "after-match";
 
@@ -56,13 +57,17 @@ export const COLOMBIA_CITIES = [
   "Buenaventura",
   "Cali",
   "Cartagena",
+  "Chía",
   "Cúcuta",
+  "Envigado",
   "Florencia",
   "Ibagué",
+  "Itagüí",
   "Manizales",
   "Medellín",
   "Montería",
   "Neiva",
+  "Palmira",
   "Pasto",
   "Pereira",
   "Popayán",
@@ -73,6 +78,8 @@ export const COLOMBIA_CITIES = [
   "Tunja",
   "Valledupar",
   "Villavicencio",
+  "Yopal",
+  "Zipaquirá",
 ];
 
 export const PROFESSION_SUGGESTIONS = [
@@ -103,8 +110,8 @@ export const PROFESSION_SUGGESTIONS = [
   "Ventas",
 ];
 
-export function readCustomProfessions(): string[] {
-  const raw = readDurable(CUSTOM_PROFESSIONS_KEY);
+function readCustomList(key: string): string[] {
+  const raw = readDurable(key);
   if (!raw) {
     return [];
   }
@@ -122,21 +129,39 @@ export function readCustomProfessions(): string[] {
   }
 }
 
-export function rememberCustomProfession(value: string): void {
+function rememberCustomList(
+  key: string,
+  baseSuggestions: readonly string[],
+  value: string,
+): void {
   const trimmed = value.trim();
   if (trimmed.length < 2) {
     return;
   }
-  const base = new Set(
-    PROFESSION_SUGGESTIONS.map((item) => item.toLocaleLowerCase("es")),
-  );
+  const base = new Set(baseSuggestions.map((item) => item.toLocaleLowerCase("es")));
   if (base.has(trimmed.toLocaleLowerCase("es"))) {
     return;
   }
-  const previous = readCustomProfessions().filter(
+  const previous = readCustomList(key).filter(
     (item) => item.toLocaleLowerCase("es") !== trimmed.toLocaleLowerCase("es"),
   );
-  writeDurable(CUSTOM_PROFESSIONS_KEY, JSON.stringify([trimmed, ...previous].slice(0, 80)));
+  writeDurable(key, JSON.stringify([trimmed, ...previous].slice(0, 80)));
+}
+
+export function readCustomProfessions(): string[] {
+  return readCustomList(CUSTOM_PROFESSIONS_KEY);
+}
+
+export function rememberCustomProfession(value: string): void {
+  rememberCustomList(CUSTOM_PROFESSIONS_KEY, PROFESSION_SUGGESTIONS, value);
+}
+
+export function readCustomCities(): string[] {
+  return readCustomList(CUSTOM_CITIES_KEY);
+}
+
+export function rememberCustomCity(value: string): void {
+  rememberCustomList(CUSTOM_CITIES_KEY, COLOMBIA_CITIES, value);
 }
 
 export const KNOWLEDGE_SUGGESTIONS = [

@@ -10,12 +10,12 @@ import { offlineWriteMessage, useHashScroll, useOnline } from "@/hooks/useOnline
 import { isValidVisibleName } from "@/lib/auth-validation";
 import { foldText } from "@/lib/affinity";
 import {
-  COLOMBIA_CITIES,
   COUNTRY_OPTIONS,
   EMPTY_PROFILE,
   KNOWLEDGE_SUGGESTIONS,
   initialsFromName,
   readProfile,
+  rememberCustomCity,
   rememberCustomProfession,
   saveProfile,
   type FieldVisibility,
@@ -27,6 +27,7 @@ import {
   remoteSaveProfile,
 } from "@/lib/remote/identity";
 import { readSession } from "@/lib/session";
+import { CityPicker } from "@/components/profile/CityPicker";
 import { ProfessionPicker } from "@/components/profile/ProfessionPicker";
 import { ProfilePreview } from "@/components/profile/ProfilePreview";
 
@@ -182,6 +183,9 @@ export function ProfileSetup() {
     if (nextProfile.profession.length >= 2) {
       rememberCustomProfession(nextProfile.profession);
     }
+    if (nextProfile.city.length >= 2) {
+      rememberCustomCity(nextProfile.city);
+    }
 
     setSaving(true);
     try {
@@ -331,23 +335,12 @@ export function ProfileSetup() {
               {errors.country ? <p className="mt-1 text-xs text-danger">{errors.country}</p> : null}
             </div>
 
-            <div>
-              <TextField
-                id="profile-city"
-                label="Ciudad"
-                hint="Puedes escribir un municipio que no esté en la lista."
-                autoComplete="address-level2"
-                list="colombia-cities"
-                value={profile.city}
-                onChange={(value) => update({ city: value })}
-                error={errors.city}
-              />
-              <datalist id="colombia-cities">
-                {COLOMBIA_CITIES.map((city) => (
-                  <option key={city} value={city} />
-                ))}
-              </datalist>
-            </div>
+            <CityPicker
+              id="profile-city"
+              value={profile.city}
+              onChange={(value) => update({ city: value })}
+              error={errors.city}
+            />
 
             <ProfessionPicker
               id="profile-profession"

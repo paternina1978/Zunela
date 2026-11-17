@@ -101,11 +101,13 @@ Authentication → URL Configuration:
 ## 4. Criterios antes de ampliar a 50+
 
 - [x] SQL `001`–`018` en cloud Zunela
-- [ ] Repo en GitHub (o deploy CLI)
-- [ ] Servicio Railway con Root `zunela-web` + 3 env vars
-- [ ] Dominio público + Auth redirects
-- [ ] Primer admin + prueba multi-cuenta
-- [ ] IA apagada / fail-closed
+- [x] Repo en GitHub (`paternina1978/Zunela`)
+- [x] Railway online: `https://zunela-production.up.railway.app` (Dockerfile)
+- [x] Auth redirects con `https://` (Site URL + `/auth/callback`)
+- [x] Primer admin cloud (bootstrap) + flujo multi-cuenta listo
+- [x] IA apagada / fail-closed (APIs y stubs)
+- [ ] Recorrer runbook §2b en producción con 2 cuentas reales
+- [ ] Google OAuth (pausado: requiere tarjeta en Google Cloud)
 
 ## 5. Fuera de alcance
 
