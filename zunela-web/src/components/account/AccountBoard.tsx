@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { JourneySteps } from "@/components/journey/JourneySteps";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { offlineWriteMessage, useHashScroll, useOnline } from "@/hooks/useOnline";
+import { backendModeLabel } from "@/lib/backend-mode";
 import {
   DEFAULT_ACCOUNT,
   currentPlanLimits,
@@ -386,6 +387,12 @@ export function AccountBoard() {
         <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
           Notificaciones, privacidad, seguridad y membresía. El correo solo lo ves tú. Esta prueba
           es una PWA: puedes instalarla desde el navegador sin pagar.
+        </p>
+        <p className="mt-3 rounded-2xl border border-line bg-cream-deep px-4 py-3 text-sm leading-6 text-navy">
+          Persistencia: <span className="font-semibold">{backendModeLabel()}</span>
+          {remoteIdentityAvailable()
+            ? ". Las cuentas viven en Supabase (Auth + profiles)."
+            : ". Las cuentas viven solo en este navegador (localStorage). No aparecen en el SQL de Supabase."}
         </p>
         {!online || offlineHint ? (
           <p className="mt-3 text-sm leading-6 text-muted">{offlineHint || offlineWriteMessage()}</p>
