@@ -14,7 +14,8 @@ import {
   refreshRemoteCommunityCache,
   type CommunityInput,
 } from "@/lib/own-communities";
-import { COLOMBIA_CITIES, readProfile } from "@/lib/profile";
+import { CityPicker } from "@/components/profile/CityPicker";
+import { readProfile, rememberCustomCity } from "@/lib/profile";
 
 export function PublishCommunity() {
   const router = useRouter();
@@ -47,8 +48,8 @@ export function PublishCommunity() {
       setPremium(onTrial);
       setQuota(communityQuotaStatus());
       setAccess(onTrial ? "privada" : "publica");
-      if (profile?.city && COLOMBIA_CITIES.includes(profile.city)) {
-        setCity(profile.city);
+      if (profile?.city?.trim()) {
+        setCity(profile.city.trim());
       }
       if (affinity?.interests[0]) {
         setInterest(affinity.interests[0]);
@@ -154,20 +155,16 @@ export function PublishCommunity() {
           />
         </Field>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <Field id="com-city" label="Ciudad">
-            <select
-              id="com-city"
-              value={city}
-              onChange={(event) => setCity(event.target.value)}
-              className={inputClass}
-            >
-              {COLOMBIA_CITIES.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
-            </select>
-          </Field>
+          <CityPicker
+            id="com-city"
+            value={city}
+            onChange={(value) => {
+              setCity(value);
+              if (value.trim().length >= 2) {
+                rememberCustomCity(value);
+              }
+            }}
+          />
           <Field id="com-modality" label="Modalidad">
             <select
               id="com-modality"

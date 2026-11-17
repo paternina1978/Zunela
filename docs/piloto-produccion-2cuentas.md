@@ -6,6 +6,7 @@ Usá **dos navegadores** o uno normal + uno privado (cada uno = una cuenta).
 
 ## Preparación
 
+0. En Supabase SQL Editor (si aún no): ejecutar `supabase/migrations/019_private_messages_accepted.sql`.
 1. Cuenta **A**: crear cuenta → perfil (ciudad + profesión) → intereses.
 2. En A → **Cuenta** → **Soy el primer administrador** (solo la primera vez, si aún no hay admin).
 3. Cuenta **B** (otra ventana): crear cuenta → perfil → intereses.

@@ -9,7 +9,8 @@ import { currentPlanLimits, readActivePlan, startPremiumTrial } from "@/lib/acco
 import { MODALITY_OPTIONS, readAffinity } from "@/lib/affinity";
 import { catalogInterestLabels } from "@/lib/catalog";
 import { publishOwnOpportunityAsync, OPPORTUNITY_CATEGORIES } from "@/lib/own-opportunities";
-import { COLOMBIA_CITIES, readProfile } from "@/lib/profile";
+import { CityPicker } from "@/components/profile/CityPicker";
+import { readProfile, rememberCustomCity } from "@/lib/profile";
 
 export function PublishOpportunity() {
   const router = useRouter();
@@ -34,8 +35,8 @@ export function PublishOpportunity() {
     const affinity = readAffinity();
     setPremium(readActivePlan() === "prueba");
     setTrialDays(currentPlanLimits().trialDays);
-    if (profile?.city && COLOMBIA_CITIES.includes(profile.city)) {
-      setCity(profile.city);
+    if (profile?.city?.trim()) {
+      setCity(profile.city.trim());
     }
     if (affinity?.interests[0]) {
       setInterest(affinity.interests[0]);
@@ -138,20 +139,16 @@ export function PublishOpportunity() {
             />
           </Field>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            <Field id="op-city" label="Ciudad">
-              <select
-                id="op-city"
-                value={city}
-                onChange={(event) => setCity(event.target.value)}
-                className={inputClass}
-              >
-                {COLOMBIA_CITIES.map((item) => (
-                  <option key={item} value={item}>
-                    {item}
-                  </option>
-                ))}
-              </select>
-            </Field>
+            <CityPicker
+              id="op-city"
+              value={city}
+              onChange={(value) => {
+                setCity(value);
+                if (value.trim().length >= 2) {
+                  rememberCustomCity(value);
+                }
+              }}
+            />
             <Field id="op-modality" label="Modalidad">
               <select
                 id="op-modality"

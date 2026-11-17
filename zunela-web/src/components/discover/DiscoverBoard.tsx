@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { DiscoverChrome } from "@/components/discover/DiscoverChrome";
-import { offlineWriteMessage, useOnline } from "@/hooks/useOnline";
+import { offlineWriteMessage, useOnline, useRefreshOnFocus } from "@/hooks/useOnline";
 import {
   readAdminParams,
   readSuspendedIds,
@@ -85,62 +85,58 @@ export function DiscoverBoard() {
   const [selfCard, setSelfCard] = useState<ScoredEntry | null>(null);
   const [offlineHint, setOfflineHint] = useState("");
 
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      const profile = readProfile();
-      const parsedAffinity = readAffinity();
-      const active = parsedAffinity ?? EMPTY_AFFINITY;
-      const profileCity = profile?.city ?? "";
-      setCity(profileCity);
-      setDepartment(departmentOfCity(profileCity));
-      setHasAffinity(Boolean(parsedAffinity));
-      const self = buildSelfEntry(profile, active);
-      setSelfCard(self ? scoreCatalog(self, active, profileCity) : null);
+  const load = useCallback(async () => {
+    const profile = readProfile();
+    const parsedAffinity = readAffinity();
+    const active = parsedAffinity ?? EMPTY_AFFINITY;
+    const profileCity = profile?.city ?? "";
+    setCity(profileCity);
+    setDepartment(departmentOfCity(profileCity));
+    setHasAffinity(Boolean(parsedAffinity));
+    const self = buildSelfEntry(profile, active);
+    setSelfCard(self ? scoreCatalog(self, active, profileCity) : null);
 
-      let remotePeople: Awaited<ReturnType<typeof listRemotePeople>> = [];
-      if (remoteIdentityAvailable()) {
-        await refreshRemoteAdminParams();
-        await refreshRemoteCatalogs();
-        await refreshRemoteSuspendedIds();
-        await refreshRemoteMatchCache();
-        await refreshRemoteOpportunityCache();
-        await refreshRemoteCommunityCache();
-        const me = await remoteAuthUserId();
-        remotePeople = await listRemotePeople(me);
-      }
-      setInterestChoices(catalogInterestLabels());
-      setGoalChoices(readGoalOptions());
-      setAffinityThreshold(readAdminParams().affinityThreshold ?? 0);
-      if (cancelled) {
-        return;
-      }
-
-      const listed = [
-        ...listedCatalog(),
-        ...remotePeople,
-        ...readOwnOpportunities().map(ownOpportunityEntry),
-        ...listCachedRemoteOpportunities().map(ownOpportunityEntry),
-        ...readOwnCommunities()
-          .filter((item) => item.access === "publica")
-          .map(ownCommunityEntry),
-        ...listCachedRemoteCommunities()
-          .filter((item) => item.access !== "invitacion" || findOwnCommunity(item.id))
-          .map(ownCommunityEntry),
-      ];
-      setEntries(
-        listed
-          .map((entry) => scoreCatalog(entry, active, profileCity))
-          .sort((left, right) => right.score - left.score),
-      );
-      setSent(readSentInterest());
-      setReady(true);
+    let remotePeople: Awaited<ReturnType<typeof listRemotePeople>> = [];
+    if (remoteIdentityAvailable()) {
+      await refreshRemoteAdminParams();
+      await refreshRemoteCatalogs();
+      await refreshRemoteSuspendedIds();
+      await refreshRemoteMatchCache();
+      await refreshRemoteOpportunityCache();
+      await refreshRemoteCommunityCache();
+      const me = await remoteAuthUserId();
+      remotePeople = await listRemotePeople(me);
     }
-    void load();
-    return () => {
-      cancelled = true;
-    };
+    setInterestChoices(catalogInterestLabels());
+    setGoalChoices(readGoalOptions());
+    setAffinityThreshold(readAdminParams().affinityThreshold ?? 0);
+
+    const listed = [
+      ...listedCatalog(),
+      ...remotePeople,
+      ...readOwnOpportunities().map(ownOpportunityEntry),
+      ...listCachedRemoteOpportunities().map(ownOpportunityEntry),
+      ...readOwnCommunities()
+        .filter((item) => item.access === "publica")
+        .map(ownCommunityEntry),
+      ...listCachedRemoteCommunities()
+        .filter((item) => item.access !== "invitacion" || findOwnCommunity(item.id))
+        .map(ownCommunityEntry),
+    ];
+    setEntries(
+      listed
+        .map((entry) => scoreCatalog(entry, active, profileCity))
+        .sort((left, right) => right.score - left.score),
+    );
+    setSent(readSentInterest());
+    setReady(true);
   }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  useRefreshOnFocus(load);
 
   const visible = useMemo(() => {
     const folded = foldText(query);

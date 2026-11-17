@@ -19,7 +19,8 @@ import {
 } from "@/lib/opportunity-draft";
 import { attemptA03 } from "@/lib/ai-structured";
 import { OPPORTUNITY_CATEGORIES, publishOwnOpportunityAsync } from "@/lib/own-opportunities";
-import { COLOMBIA_CITIES, readProfile } from "@/lib/profile";
+import { CityPicker } from "@/components/profile/CityPicker";
+import { readProfile, rememberCustomCity } from "@/lib/profile";
 
 export function OpportunityCopilot() {
   const router = useRouter();
@@ -41,9 +42,7 @@ export function OpportunityCopilot() {
     setPremium(readActivePlan() === "prueba");
     setDraft({
       ...(stored ?? EMPTY_COPILOT_DRAFT),
-      city:
-        stored?.city ||
-        (profile?.city && COLOMBIA_CITIES.includes(profile.city) ? profile.city : "Medellín"),
+      city: stored?.city || profile?.city?.trim() || "Medellín",
       interest: stored?.interest || affinity?.interests[0] || "Programación",
     });
     setReady(true);
@@ -182,20 +181,16 @@ export function OpportunityCopilot() {
             />
           </Field>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            <Field id="draft-city" label="Ciudad">
-              <select
-                id="draft-city"
-                value={draft.city}
-                onChange={(event) => update({ city: event.target.value })}
-                className={inputClass}
-              >
-                {COLOMBIA_CITIES.map((item) => (
-                  <option key={item} value={item}>
-                    {item}
-                  </option>
-                ))}
-              </select>
-            </Field>
+            <CityPicker
+              id="draft-city"
+              value={draft.city}
+              onChange={(value) => {
+                update({ city: value });
+                if (value.trim().length >= 2) {
+                  rememberCustomCity(value);
+                }
+              }}
+            />
             <Field id="draft-modality" label="Modalidad">
               <select
                 id="draft-modality"

@@ -13,7 +13,7 @@ cd zunela-web
 npm run dev -- -p 3001
 ```
 
-Las migraciones `001`–`018` se aplican solas al arrancar. Studio: `http://127.0.0.1:54323`. Correos de Auth: Mailpit `http://127.0.0.1:54324`.
+Las migraciones `001`–`019` se aplican solas al arrancar. Studio: `http://127.0.0.1:54323`. Correos de Auth: Mailpit `http://127.0.0.1:54324`.
 
 ## Checklist de setup (cloud u local)
 
@@ -23,14 +23,17 @@ Las migraciones `001`–`018` se aplican solas al arrancar. Studio: `http://127.
 
 - [x] Stack local listo (`npx supabase start`).
 - [x] Proyecto cloud **Zunela** (`lseadxgeffktdnqgknhd`) + SQL `001`–`018`.
-- [ ] Auth email + Site URL / Redirect = dominio Railway.
-- [ ] Railway: Root Directory `zunela-web` + 3 env vars (URL arriba + anon key).
-- [ ] Primera cuenta cloud → **Soy el primer administrador**.
+- [ ] Aplicar `019_private_messages_accepted.sql` en cloud (SQL Editor).
+- [x] Auth email + Site URL / Redirect = dominio Railway.
+- [x] Railway online + env vars.
+- [x] Primera cuenta cloud → bootstrap admin.
 - [x] Runbook local §2b / §6b ([`docs/piloto-runbook.md`](../docs/piloto-runbook.md)).
 
 ## 1. Aplicar SQL
 
-**Preferido (proyecto nuevo):** SQL Editor → pegar y ejecutar [`apply-all.sql`](./apply-all.sql) (concatena `001`–`018`).
+**Preferido (proyecto nuevo):** SQL Editor → pegar y ejecutar [`apply-all.sql`](./apply-all.sql) (concatena `001`–`019`).
+
+**Proyecto cloud ya con 001–018:** ejecutar solo [`migrations/019_private_messages_accepted.sql`](./migrations/019_private_messages_accepted.sql).
 
 **Alternativa:** ejecutar en orden:
 
@@ -52,6 +55,7 @@ Las migraciones `001`–`018` se aplican solas al arrancar. Studio: `http://127.
 - [`migrations/016_app_catalogs.sql`](./migrations/016_app_catalogs.sql)
 - [`migrations/017_pilot_presence.sql`](./migrations/017_pilot_presence.sql)
 - [`migrations/018_account_lifecycle.sql`](./migrations/018_account_lifecycle.sql)
+- [`migrations/019_private_messages_accepted.sql`](./migrations/019_private_messages_accepted.sql)
 
 Las migraciones individuales son la fuente de verdad. `apply-all.sql` es solo atajo; regenerarlo si cambian los archivos en `migrations/`.
 
