@@ -24,6 +24,7 @@ import {
   saveSentInterest,
   scoreCatalog,
   sentKey,
+  type CatalogEntry,
   type DiscoverKind,
   type ScoredEntry,
   type SentInterest,
@@ -50,7 +51,7 @@ import {
   refreshRemoteOpportunityCache,
 } from "@/lib/own-opportunities";
 import { initialsFromName, readProfile } from "@/lib/profile";
-import { listRemotePeople, remoteAuthUserId } from "@/lib/remote/catalog";
+import { listRemotePeopleDetailed, remoteAuthUserId } from "@/lib/remote/catalog";
 import { remoteIdentityAvailable } from "@/lib/remote/identity";
 import { buildSelfEntry, SELF_PERSON_ID, selfPreviewReady } from "@/lib/self-profile";
 
@@ -89,6 +90,8 @@ export function DiscoverBoard() {
   const [affinityThreshold, setAffinityThreshold] = useState(0);
   const [selfCard, setSelfCard] = useState<ScoredEntry | null>(null);
   const [offlineHint, setOfflineHint] = useState("");
+  const [remotePeopleCount, setRemotePeopleCount] = useState(0);
+  const [remoteLoadHint, setRemoteLoadHint] = useState("");
 
   const load = useCallback(async () => {
     const profile = readProfile();
@@ -101,7 +104,7 @@ export function DiscoverBoard() {
     const self = buildSelfEntry(profile, active);
     setSelfCard(self ? scoreCatalog(self, active, profileCity) : null);
 
-    let remotePeople: Awaited<ReturnType<typeof listRemotePeople>> = [];
+    let remotePeople: CatalogEntry[] = [];
     if (remoteIdentityAvailable()) {
       await refreshRemoteAdminParams();
       await refreshRemoteCatalogs();
@@ -110,7 +113,23 @@ export function DiscoverBoard() {
       await refreshRemoteOpportunityCache();
       await refreshRemoteCommunityCache();
       const me = await remoteAuthUserId();
-      remotePeople = await listRemotePeople(me);
+      const remote = await listRemotePeopleDetailed(me);
+      remotePeople = remote.people;
+      setRemotePeopleCount(remote.people.length);
+      if (remote.error) {
+        setRemoteLoadHint(remote.error);
+      } else if (!remote.sessionReady) {
+        setRemoteLoadHint("Esperando sesión… recarga en unos segundos.");
+      } else if (remote.people.length === 0) {
+        setRemoteLoadHint(
+          "La base no devolvió otras personas. En Supabase (Zunela) ejecuta la migración 020 y verifica: select visible_name, city from profiles;",
+        );
+      } else {
+        setRemoteLoadHint("");
+      }
+    } else {
+      setRemotePeopleCount(0);
+      setRemoteLoadHint("");
     }
     setInterestChoices(catalogInterestLabels());
     setGoalChoices(readGoalOptions());
@@ -296,6 +315,12 @@ export function DiscoverBoard() {
           <p className="mt-3 text-sm leading-6 text-muted">
             Umbral de afinidad vigente: {affinityThreshold}. Las fichas por debajo no salen en este
             listado. No es probabilidad de éxito; una ficha por enlace sigue abierta.
+          </p>
+        ) : null}
+        {remoteIdentityAvailable() ? (
+          <p className="mt-3 text-sm leading-6 text-muted">
+            Perfiles remotos cargados: {remotePeopleCount}
+            {remoteLoadHint ? ` · ${remoteLoadHint}` : null}
           </p>
         ) : null}
       </div>

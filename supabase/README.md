@@ -23,7 +23,7 @@ Las migraciones `001`–`019` se aplican solas al arrancar. Studio: `http://127.
 
 - [x] Stack local listo (`npx supabase start`).
 - [x] Proyecto cloud **Zunela** (`lseadxgeffktdnqgknhd`) + SQL `001`–`018`.
-- [ ] Aplicar `019_private_messages_accepted.sql` en cloud (SQL Editor).
+- [ ] Aplicar `019` y `020` en cloud (SQL Editor) si aún no están.
 - [x] Auth email + Site URL / Redirect = dominio Railway.
 - [x] Railway online + env vars.
 - [x] Primera cuenta cloud → bootstrap admin.
@@ -33,7 +33,9 @@ Las migraciones `001`–`019` se aplican solas al arrancar. Studio: `http://127.
 
 **Preferido (proyecto nuevo):** SQL Editor → pegar y ejecutar [`apply-all.sql`](./apply-all.sql) (concatena `001`–`019`).
 
-**Proyecto cloud ya con 001–018:** ejecutar solo [`migrations/019_private_messages_accepted.sql`](./migrations/019_private_messages_accepted.sql).
+**Proyecto cloud ya con 001–018:** ejecutar en orden:
+- [`migrations/019_private_messages_accepted.sql`](./migrations/019_private_messages_accepted.sql)
+- [`migrations/020_list_discover_profiles.sql`](./migrations/020_list_discover_profiles.sql)
 
 **Alternativa:** ejecutar en orden:
 
@@ -56,6 +58,7 @@ Las migraciones `001`–`019` se aplican solas al arrancar. Studio: `http://127.
 - [`migrations/017_pilot_presence.sql`](./migrations/017_pilot_presence.sql)
 - [`migrations/018_account_lifecycle.sql`](./migrations/018_account_lifecycle.sql)
 - [`migrations/019_private_messages_accepted.sql`](./migrations/019_private_messages_accepted.sql)
+- [`migrations/020_list_discover_profiles.sql`](./migrations/020_list_discover_profiles.sql)
 
 Las migraciones individuales son la fuente de verdad. `apply-all.sql` es solo atajo; regenerarlo si cambian los archivos en `migrations/`.
 

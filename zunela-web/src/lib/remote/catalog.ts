@@ -49,6 +49,14 @@ type AffinityRow = {
   availability?: string[];
 };
 
+type DiscoverProfileRow = ProfileRow & AffinityRow;
+
+export type RemotePeopleResult = {
+  people: CatalogEntry[];
+  error: string | null;
+  sessionReady: boolean;
+};
+
 const PROFILE_LIST_COLUMNS =
   "id, visible_name, country, city, profession, knowledge, presentation, visibility, suspended";
 
@@ -56,24 +64,43 @@ export async function listRemotePeople(
   excludeUserId?: string | null,
   options?: { includeSuspended?: boolean },
 ): Promise<CatalogEntry[]> {
+  const result = await listRemotePeopleDetailed(excludeUserId, options);
+  return result.people;
+}
+
+export async function listRemotePeopleDetailed(
+  excludeUserId?: string | null,
+  options?: { includeSuspended?: boolean },
+): Promise<RemotePeopleResult> {
   const client = getSupabaseBrowserClient();
   if (!client || !remoteIdentityAvailable()) {
-    return [];
+    return { people: [], error: "Backend remoto no disponible.", sessionReady: false };
   }
 
-  // Esperar JWT: si Descubrir monta antes que Auth, RLS devolvía 0 filas.
   const {
     data: { session },
   } = await client.auth.getSession();
   if (!session) {
-    return [];
+    return { people: [], error: "Sin sesión Auth todavía.", sessionReady: false };
   }
 
-  // Sin photo_url: las fotos en base64 rompían o vaciaban el listado.
+  const includeSuspended = options?.includeSuspended === true;
+
+  // Preferido: RPC security definer (020). Fallback a select directo.
+  const rpc = await client.rpc("list_discover_profiles");
+  if (!rpc.error && Array.isArray(rpc.data)) {
+    const people = mapDiscoverRows(rpc.data as DiscoverProfileRow[], excludeUserId, includeSuspended);
+    return { people, error: null, sessionReady: true };
+  }
+
   const { data: profiles, error } = await client.from("profiles").select(PROFILE_LIST_COLUMNS);
   if (error || !profiles) {
-    console.error("[zunela] listRemotePeople", error?.message ?? "sin filas");
-    return [];
+    const message =
+      rpc.error?.message ||
+      error?.message ||
+      "No se pudieron leer perfiles. Aplica la migración 020 en Supabase.";
+    console.error("[zunela] listRemotePeople", message);
+    return { people: [], error: message, sessionReady: true };
   }
 
   const { data: affinities } = await client
@@ -84,8 +111,7 @@ export async function listRemotePeople(
     byUser.set(String((row as AffinityRow).user_id), row as AffinityRow);
   }
 
-  const includeSuspended = options?.includeSuspended === true;
-  return (profiles as ProfileRow[])
+  const people = (profiles as ProfileRow[])
     .filter((row) => Boolean(row.id))
     .filter((row) => includeSuspended || row.suspended !== true)
     .filter((row) => !excludeUserId || row.id !== excludeUserId)
@@ -97,6 +123,32 @@ export async function listRemotePeople(
       }
       return remember(entry);
     });
+
+  return { people, error: null, sessionReady: true };
+}
+
+function mapDiscoverRows(
+  rows: DiscoverProfileRow[],
+  excludeUserId: string | null | undefined,
+  includeSuspended: boolean,
+) {
+  return rows
+    .filter((row) => Boolean(row.id))
+    .filter((row) => includeSuspended || row.suspended !== true)
+    .filter((row) => !excludeUserId || row.id !== excludeUserId)
+    .map((row) => {
+      const affinity: AffinityRow = {
+        user_id: row.id,
+        interests: row.interests,
+        goals: row.goals,
+        offers: row.offers,
+        modality: row.modality,
+        reach: row.reach,
+        availability: row.availability,
+      };
+      const entry = toCatalogEntry(row, affinity);
+      return remember(entry);
+    });
 }
 
 export async function getRemotePerson(id: string): Promise<CatalogEntry | null> {
@@ -104,7 +156,17 @@ export async function getRemotePerson(id: string): Promise<CatalogEntry | null> 
   if (!client || !remoteIdentityAvailable()) {
     return null;
   }
-  const { data: profile, error } = await client.from("profiles").select("*").eq("id", id).maybeSingle();
+  const {
+    data: { session },
+  } = await client.auth.getSession();
+  if (!session) {
+    return null;
+  }
+  const { data: profile, error } = await client
+    .from("profiles")
+    .select(PROFILE_LIST_COLUMNS)
+    .eq("id", id)
+    .maybeSingle();
   if (error || !profile) {
     return null;
   }
@@ -115,7 +177,7 @@ export async function getRemotePerson(id: string): Promise<CatalogEntry | null> 
   }
   const { data: affinity } = await client
     .from("affinities")
-    .select("*")
+    .select("user_id, interests, goals, offers, modality, reach, availability")
     .eq("user_id", id)
     .maybeSingle();
   return remember(toCatalogEntry(row, (affinity as AffinityRow | null) ?? undefined));
@@ -127,9 +189,9 @@ export async function remoteAuthUserId(): Promise<string | null> {
     return null;
   }
   const {
-    data: { user },
-  } = await client.auth.getUser();
-  return user?.id ?? null;
+    data: { session },
+  } = await client.auth.getSession();
+  return session?.user?.id ?? null;
 }
 
 function toCatalogEntry(row: ProfileRow, affinity?: AffinityRow): CatalogEntry {
@@ -143,8 +205,8 @@ function toCatalogEntry(row: ProfileRow, affinity?: AffinityRow): CatalogEntry {
     ? affinity!.availability!.map(String)
     : ["Horario flexible"];
   const knowledge = Array.isArray(row.knowledge) ? row.knowledge.map(String) : [];
-
   const title = row.visible_name?.trim() || "Persona del piloto";
+
   return {
     id: row.id,
     kind: "persona",
