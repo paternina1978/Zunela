@@ -45,6 +45,20 @@ export function useHashScroll(ready: boolean) {
   }, [ready]);
 }
 
+/** Recarga cuando Auth/sesión remota ya está lista (evita Descubrir vacío al montar). */
+export function useRefreshOnRemoteSession(reload: () => void | Promise<void>, enabled = true) {
+  useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+    function onSession() {
+      void reload();
+    }
+    window.addEventListener("zunela-session", onSession);
+    return () => window.removeEventListener("zunela-session", onSession);
+  }, [reload, enabled]);
+}
+
 /** Recarga al volver a la pestaña (piloto multi-cuenta sin Realtime). */
 export function useRefreshOnFocus(reload: () => void | Promise<void>, enabled = true) {
   useEffect(() => {

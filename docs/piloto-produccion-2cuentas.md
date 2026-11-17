@@ -31,7 +31,7 @@ No hay invitación por correo entre personas. Cada cuenta se registra sola; lueg
 
 | Síntoma | Qué hacer |
 |---------|-----------|
-| No ves a la otra persona | Perfil + intereses en **ambas**; filtros Personas + Toda Colombia; Admin → umbral afinidad = 0 |
+| No ves a la otra persona | Perfil + intereses en **ambas**; filtros Personas + Toda Colombia; Admin → umbral = 0. En Supabase: `select id, visible_name, city from profiles;` (deben salir las 3). Recargá Descubrir tras el deploy de sesión. |
 | Solo ves oportunidades/comunidades | Cambiar filtro a Personas |
 | “Conversación cerrada” | Aceptar en Conexiones; reabrir Mensajes |
 | Ya te enviaron interés | Ir a Conexiones y aceptar |

@@ -59,6 +59,7 @@ export function RemoteSessionSync() {
           touchPilotPresenceAsync(),
         ]);
         if (typeof window !== "undefined") {
+          window.dispatchEvent(new Event("zunela-session"));
           window.dispatchEvent(new Event("zunela-role"));
           window.dispatchEvent(new Event("zunela-notices"));
         }

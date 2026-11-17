@@ -3,7 +3,12 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { DiscoverChrome } from "@/components/discover/DiscoverChrome";
-import { offlineWriteMessage, useOnline, useRefreshOnFocus } from "@/hooks/useOnline";
+import {
+  offlineWriteMessage,
+  useOnline,
+  useRefreshOnFocus,
+  useRefreshOnRemoteSession,
+} from "@/hooks/useOnline";
 import {
   readAdminParams,
   readSuspendedIds,
@@ -136,6 +141,7 @@ export function DiscoverBoard() {
     void load();
   }, [load]);
 
+  useRefreshOnRemoteSession(load);
   useRefreshOnFocus(load);
 
   const visible = useMemo(() => {

@@ -49,6 +49,9 @@ type AffinityRow = {
   availability?: string[];
 };
 
+const PROFILE_LIST_COLUMNS =
+  "id, visible_name, country, city, profession, knowledge, presentation, visibility, suspended";
+
 export async function listRemotePeople(
   excludeUserId?: string | null,
   options?: { includeSuspended?: boolean },
@@ -58,12 +61,24 @@ export async function listRemotePeople(
     return [];
   }
 
-  const { data: profiles, error } = await client.from("profiles").select("*");
-  if (error || !profiles) {
+  // Esperar JWT: si Descubrir monta antes que Auth, RLS devolvía 0 filas.
+  const {
+    data: { session },
+  } = await client.auth.getSession();
+  if (!session) {
     return [];
   }
 
-  const { data: affinities } = await client.from("affinities").select("*");
+  // Sin photo_url: las fotos en base64 rompían o vaciaban el listado.
+  const { data: profiles, error } = await client.from("profiles").select(PROFILE_LIST_COLUMNS);
+  if (error || !profiles) {
+    console.error("[zunela] listRemotePeople", error?.message ?? "sin filas");
+    return [];
+  }
+
+  const { data: affinities } = await client
+    .from("affinities")
+    .select("user_id, interests, goals, offers, modality, reach, availability");
   const byUser = new Map<string, AffinityRow>();
   for (const row of affinities ?? []) {
     byUser.set(String((row as AffinityRow).user_id), row as AffinityRow);
@@ -71,7 +86,7 @@ export async function listRemotePeople(
 
   const includeSuspended = options?.includeSuspended === true;
   return (profiles as ProfileRow[])
-    .filter((row) => row.id && row.visible_name?.trim())
+    .filter((row) => Boolean(row.id))
     .filter((row) => includeSuspended || row.suspended !== true)
     .filter((row) => !excludeUserId || row.id !== excludeUserId)
     .map((row) => {
@@ -129,10 +144,11 @@ function toCatalogEntry(row: ProfileRow, affinity?: AffinityRow): CatalogEntry {
     : ["Horario flexible"];
   const knowledge = Array.isArray(row.knowledge) ? row.knowledge.map(String) : [];
 
+  const title = row.visible_name?.trim() || "Persona del piloto";
   return {
     id: row.id,
     kind: "persona",
-    title: row.visible_name.trim(),
+    title,
     subtitle: row.profession?.trim() || "Sin profesión pública",
     city,
     department: departmentOfCity(city),

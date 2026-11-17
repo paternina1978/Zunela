@@ -3,7 +3,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { JourneySteps } from "@/components/journey/JourneySteps";
-import { offlineWriteMessage, useOnline, useRefreshOnFocus } from "@/hooks/useOnline";
+import {
+  offlineWriteMessage,
+  useOnline,
+  useRefreshOnFocus,
+  useRefreshOnRemoteSession,
+} from "@/hooks/useOnline";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { EMPTY_AFFINITY, readAffinity } from "@/lib/affinity";
 import {
@@ -122,6 +127,7 @@ export function MatchBoard() {
     void reload();
   }, [reload]);
 
+  useRefreshOnRemoteSession(reload);
   useRefreshOnFocus(reload);
 
   async function accept(personId: string) {

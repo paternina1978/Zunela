@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { JourneySteps } from "@/components/journey/JourneySteps";
 import { useCallback, useEffect, useState } from "react";
-import { useRefreshOnFocus } from "@/hooks/useOnline";
+import { useRefreshOnFocus, useRefreshOnRemoteSession } from "@/hooks/useOnline";
 import { readActivePlan } from "@/lib/account";
 import { readDailyMessageLimit } from "@/lib/admin";
 import { findCatalogEntry, isPublicField } from "@/lib/discover";
@@ -71,6 +71,7 @@ export function MessageInbox() {
     void load();
   }, [load]);
 
+  useRefreshOnRemoteSession(load);
   useRefreshOnFocus(load);
 
   if (!ready) {

@@ -3,7 +3,12 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { MessageHeader } from "@/components/messages/MessageInbox";
-import { offlineWriteMessage, useOnline, useRefreshOnFocus } from "@/hooks/useOnline";
+import {
+  offlineWriteMessage,
+  useOnline,
+  useRefreshOnFocus,
+  useRefreshOnRemoteSession,
+} from "@/hooks/useOnline";
 import { readActivePlan } from "@/lib/account";
 import { blockedAttachment, readDailyMessageLimit } from "@/lib/admin";
 import {
@@ -102,6 +107,7 @@ export function MessageThread({ id }: MessageThreadProps) {
     void reload();
   }, [reload]);
 
+  useRefreshOnRemoteSession(reload);
   useRefreshOnFocus(reload);
 
   async function send() {
