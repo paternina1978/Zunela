@@ -14,9 +14,9 @@ import {
   COUNTRY_OPTIONS,
   EMPTY_PROFILE,
   KNOWLEDGE_SUGGESTIONS,
-  PROFESSION_SUGGESTIONS,
   initialsFromName,
   readProfile,
+  rememberCustomProfession,
   saveProfile,
   type FieldVisibility,
   type ProfileDraft,
@@ -27,6 +27,7 @@ import {
   remoteSaveProfile,
 } from "@/lib/remote/identity";
 import { readSession } from "@/lib/session";
+import { ProfessionPicker } from "@/components/profile/ProfessionPicker";
 import { ProfilePreview } from "@/components/profile/ProfilePreview";
 
 const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
@@ -178,6 +179,9 @@ export function ProfileSetup() {
       knowledge: profile.knowledge.map((item) => item.trim()).filter(Boolean),
       presentation: profile.presentation.trim().slice(0, MAX_PRESENTATION),
     };
+    if (nextProfile.profession.length >= 2) {
+      rememberCustomProfession(nextProfile.profession);
+    }
 
     setSaving(true);
     try {
@@ -345,21 +349,12 @@ export function ProfileSetup() {
               </datalist>
             </div>
 
-            <div>
-              <TextField
-                id="profile-profession"
-                label="Profesión o actividad"
-                list="profession-suggestions"
-                value={profile.profession}
-                onChange={(value) => update({ profession: value })}
-                error={errors.profession}
-              />
-              <datalist id="profession-suggestions">
-                {PROFESSION_SUGGESTIONS.map((item) => (
-                  <option key={item} value={item} />
-                ))}
-              </datalist>
-            </div>
+            <ProfessionPicker
+              id="profile-profession"
+              value={profile.profession}
+              onChange={(value) => update({ profession: value })}
+              error={errors.profession}
+            />
 
             <div>
               <p className="mb-1.5 text-sm font-medium text-navy">Conocimientos</p>

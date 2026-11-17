@@ -2,6 +2,7 @@ import { recordProductEvent } from "@/lib/product-events";
 import { readDurable, writeDurable } from "@/lib/storage";
 
 const PROFILE_KEY = "zunela.profile";
+const CUSTOM_PROFESSIONS_KEY = "zunela.custom-professions";
 
 export type FieldVisibility = "public" | "after-match";
 
@@ -77,20 +78,66 @@ export const COLOMBIA_CITIES = [
 export const PROFESSION_SUGGESTIONS = [
   "Abogado",
   "Administrador",
+  "Agricultor",
   "Arquitecto",
+  "Auxiliar administrativo",
+  "Chef / Cocina",
   "Comercial",
   "Community manager",
+  "Conductor",
   "Consultor",
   "Contador",
   "Desarrollador",
   "Diseñador",
   "Docente",
+  "Electricista",
   "Emprendedor",
+  "Enfermero",
   "Estudiante",
   "Ingeniero",
+  "Mecánico",
+  "Médico",
   "Mercadeo",
+  "Psicólogo",
+  "Técnico",
   "Ventas",
 ];
+
+export function readCustomProfessions(): string[] {
+  const raw = readDurable(CUSTOM_PROFESSIONS_KEY);
+  if (!raw) {
+    return [];
+  }
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+    return parsed
+      .map((item) => String(item ?? "").trim())
+      .filter((item) => item.length >= 2)
+      .slice(0, 80);
+  } catch {
+    return [];
+  }
+}
+
+export function rememberCustomProfession(value: string): void {
+  const trimmed = value.trim();
+  if (trimmed.length < 2) {
+    return;
+  }
+  const base = new Set(
+    PROFESSION_SUGGESTIONS.map((item) => item.toLocaleLowerCase("es")),
+  );
+  if (base.has(trimmed.toLocaleLowerCase("es"))) {
+    return;
+  }
+  const previous = readCustomProfessions().filter(
+    (item) => item.toLocaleLowerCase("es") !== trimmed.toLocaleLowerCase("es"),
+  );
+  writeDurable(CUSTOM_PROFESSIONS_KEY, JSON.stringify([trimmed, ...previous].slice(0, 80)));
+}
 
 export const KNOWLEDGE_SUGGESTIONS = [
   "Excel",
