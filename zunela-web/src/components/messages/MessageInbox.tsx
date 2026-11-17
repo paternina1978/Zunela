@@ -3,7 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { JourneySteps } from "@/components/journey/JourneySteps";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useRefreshOnFocus } from "@/hooks/useOnline";
 import { readActivePlan } from "@/lib/account";
 import { readDailyMessageLimit } from "@/lib/admin";
 import { findCatalogEntry, isPublicField } from "@/lib/discover";
@@ -14,7 +15,8 @@ import {
   refreshRemoteMessageState,
   type PrivateMessage,
 } from "@/lib/messages";
-import { listRemotePeople, peekRemotePerson, remoteAuthUserId } from "@/lib/remote/catalog";
+import { getRemotePerson, listRemotePeople, peekRemotePerson, remoteAuthUserId } from "@/lib/remote/catalog";
+import { isRemotePersonId } from "@/lib/remote/connections";
 import { remoteIdentityAvailable } from "@/lib/remote/identity";
 import { initialsFromName } from "@/lib/profile";
 
@@ -32,48 +34,44 @@ export function MessageInbox() {
   const [remaining, setRemaining] = useState(20);
   const [planLabel, setPlanLabel] = useState("Gratis");
 
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      await refreshRemoteMatchCache();
-      await refreshRemoteMessageState();
-      if (remoteIdentityAvailable()) {
-        const me = await remoteAuthUserId();
-        await listRemotePeople(me);
-      }
-      if (cancelled) {
-        return;
-      }
-      const next: InboxItem[] = [];
-      for (const id of activeConnectionIds()) {
-        const person = findCatalogEntry(id) ?? peekRemotePerson(id);
-        if (!person || person.kind !== "persona") {
-          continue;
-        }
-        const thread = await readThreadAsync(id);
-        next.push({
-          id,
-          name: person.title,
-          detail: `${isPublicField(person, "profession", { connected: true }) ? person.subtitle : "Profesión reservada"} · ${person.city}`,
-          preview: lastPreview(thread),
-        });
-      }
-      if (cancelled) {
-        return;
-      }
-      const plan = readActivePlan();
-      const daily = readDailyMessageLimit(plan);
-      setItems(next);
-      setLimit(daily);
-      setRemaining(Math.max(0, daily - outboundTodayCount()));
-      setPlanLabel(plan === "prueba" ? "Prueba Premium" : "Gratis");
-      setReady(true);
+  const load = useCallback(async () => {
+    await refreshRemoteMatchCache();
+    await refreshRemoteMessageState();
+    if (remoteIdentityAvailable()) {
+      const me = await remoteAuthUserId();
+      await listRemotePeople(me);
     }
-    void load();
-    return () => {
-      cancelled = true;
-    };
+    const next: InboxItem[] = [];
+    for (const id of activeConnectionIds()) {
+      const person =
+        findCatalogEntry(id) ??
+        peekRemotePerson(id) ??
+        (isRemotePersonId(id) ? await getRemotePerson(id) : null);
+      if (!person || person.kind !== "persona") {
+        continue;
+      }
+      const thread = await readThreadAsync(id);
+      next.push({
+        id,
+        name: person.title,
+        detail: `${isPublicField(person, "profession", { connected: true }) ? person.subtitle : "Profesión reservada"} · ${person.city}`,
+        preview: lastPreview(thread),
+      });
+    }
+    const plan = readActivePlan();
+    const daily = readDailyMessageLimit(plan);
+    setItems(next);
+    setLimit(daily);
+    setRemaining(Math.max(0, daily - outboundTodayCount()));
+    setPlanLabel(plan === "prueba" ? "Prueba Premium" : "Gratis");
+    setReady(true);
   }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  useRefreshOnFocus(load);
 
   if (!ready) {
     return <div className="h-80" />;

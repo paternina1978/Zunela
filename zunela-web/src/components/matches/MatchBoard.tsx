@@ -3,8 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { JourneySteps } from "@/components/journey/JourneySteps";
-import { offlineWriteMessage, useOnline } from "@/hooks/useOnline";
-import { useEffect, useState, type ReactNode } from "react";
+import { offlineWriteMessage, useOnline, useRefreshOnFocus } from "@/hooks/useOnline";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { EMPTY_AFFINITY, readAffinity } from "@/lib/affinity";
 import {
   findCatalogEntry,
@@ -13,7 +13,8 @@ import {
   scoreCatalog,
   type ScoredEntry,
 } from "@/lib/discover";
-import { listRemotePeople, peekRemotePerson, remoteAuthUserId } from "@/lib/remote/catalog";
+import { getRemotePerson, listRemotePeople, peekRemotePerson, remoteAuthUserId } from "@/lib/remote/catalog";
+import { isRemotePersonId } from "@/lib/remote/connections";
 import { remoteIdentityAvailable } from "@/lib/remote/identity";
 import { readAdminParams, refreshRemoteAdminParams } from "@/lib/admin";
 import {
@@ -59,7 +60,7 @@ export function MatchBoard() {
     return false;
   }
 
-  async function reload() {
+  const reload = useCallback(async () => {
     await refreshRemoteAdminParams();
     await refreshRemoteMatchCache();
     if (remoteIdentityAvailable()) {
@@ -75,11 +76,21 @@ export function MatchBoard() {
     const declined = new Set(book.declined);
     const blocked = new Set(book.blocked);
     const expired = new Set(book.expired);
-    const people = (ids: string[]) =>
-      ids
-        .map((id) => findCatalogEntry(id) ?? peekRemotePerson(id))
+
+    async function resolvePerson(id: string) {
+      return (
+        findCatalogEntry(id) ??
+        peekRemotePerson(id) ??
+        (isRemotePersonId(id) ? await getRemotePerson(id) : null)
+      );
+    }
+
+    async function people(ids: string[]) {
+      const entries = await Promise.all(ids.map((id) => resolvePerson(id)));
+      return entries
         .filter((entry): entry is NonNullable<typeof entry> => entry?.kind === "persona")
         .map((entry) => scoreCatalog(entry, affinity, city));
+    }
 
     const receivedIds = book.incoming.filter(
       (id) => !accepted.has(id) && !declined.has(id) && !blocked.has(id) && !expired.has(id),
@@ -97,19 +108,21 @@ export function MatchBoard() {
 
     setExpiryDays(readAdminParams().matchExpiryDays);
     setGroups({
-      received: people(receivedIds),
-      sent: people(sentIds),
-      connected: people(connectedIds),
-      declined: people(book.declined),
-      expired: people(book.expired),
-      blocked: people(book.blocked),
+      received: await people(receivedIds),
+      sent: await people(sentIds),
+      connected: await people(connectedIds),
+      declined: await people(book.declined),
+      expired: await people(book.expired),
+      blocked: await people(book.blocked),
     });
     setReady(true);
-  }
+  }, []);
 
   useEffect(() => {
     void reload();
-  }, []);
+  }, [reload]);
+
+  useRefreshOnFocus(reload);
 
   async function accept(personId: string) {
     if (!guardWrite()) {

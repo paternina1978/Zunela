@@ -87,7 +87,13 @@ export async function remoteOfferInterest(personId: string): Promise<string | nu
     if (row.status === "declined") {
       return "La solicitud fue rechazada. No se reactiva sola.";
     }
-    if (row.status === "accepted" || row.status === "pending") {
+    if (row.status === "accepted") {
+      return null;
+    }
+    if (row.status === "pending") {
+      if (row.to_user === user.id) {
+        return "Esa persona ya te envió interés. Ábrelo en Conexiones para aceptar.";
+      }
       return null;
     }
   }
@@ -105,6 +111,29 @@ export async function remoteOfferInterest(personId: string): Promise<string | nu
 
 export async function remoteAccept(personId: string): Promise<string | null> {
   return updateIncoming(personId, "accepted");
+}
+
+/** true si hay conexión accepted entre la sesión actual y personId. */
+export async function remoteHasAcceptedConnection(personId: string): Promise<boolean> {
+  const client = getSupabaseBrowserClient();
+  if (!client || !remoteIdentityAvailable() || !isRemotePersonId(personId)) {
+    return false;
+  }
+  const {
+    data: { user },
+  } = await client.auth.getUser();
+  if (!user) {
+    return false;
+  }
+  const { data } = await client
+    .from("connections")
+    .select("id")
+    .eq("status", "accepted")
+    .or(
+      `and(from_user.eq.${user.id},to_user.eq.${personId}),and(from_user.eq.${personId},to_user.eq.${user.id})`,
+    )
+    .maybeSingle();
+  return Boolean(data);
 }
 
 export async function remoteDecline(personId: string): Promise<string | null> {

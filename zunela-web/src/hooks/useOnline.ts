@@ -44,3 +44,26 @@ export function useHashScroll(ready: boolean) {
     });
   }, [ready]);
 }
+
+/** Recarga al volver a la pestaña (piloto multi-cuenta sin Realtime). */
+export function useRefreshOnFocus(reload: () => void | Promise<void>, enabled = true) {
+  useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+    function onFocus() {
+      void reload();
+    }
+    function onVisibility() {
+      if (document.visibilityState === "visible") {
+        onFocus();
+      }
+    }
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [reload, enabled]);
+}

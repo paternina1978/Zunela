@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { MessageHeader } from "@/components/messages/MessageInbox";
-import { offlineWriteMessage, useOnline } from "@/hooks/useOnline";
+import { offlineWriteMessage, useOnline, useRefreshOnFocus } from "@/hooks/useOnline";
 import { readActivePlan } from "@/lib/account";
 import { blockedAttachment, readDailyMessageLimit } from "@/lib/admin";
 import {
@@ -28,7 +28,7 @@ import {
   sendPrivateMessageAsync,
   type PrivateMessage,
 } from "@/lib/messages";
-import { peekRemotePerson } from "@/lib/remote/catalog";
+import { getRemotePerson, peekRemotePerson } from "@/lib/remote/catalog";
 import { isRemotePersonId } from "@/lib/remote/connections";
 import { refreshRemoteReportState } from "@/lib/reports";
 import { initialsFromName, readProfile } from "@/lib/profile";
@@ -59,10 +59,13 @@ export function MessageThread({ id }: MessageThreadProps) {
   const [authorName, setAuthorName] = useState("Tú");
   const [blocked, setBlocked] = useState(false);
 
-  async function reload() {
+  const reload = useCallback(async () => {
     await refreshRemoteMatchCache();
     await refreshRemoteMessageState(id);
-    const person = findCatalogEntry(id) ?? peekRemotePerson(id);
+    const person =
+      findCatalogEntry(id) ??
+      peekRemotePerson(id) ??
+      (isRemotePersonId(id) ? await getRemotePerson(id) : null);
     const isBlocked = readBlockedIds().includes(id);
     setBlocked(isBlocked);
     const allowed = Boolean(person && person.kind === "persona" && isChatOpen(id) && !isBlocked);
@@ -93,11 +96,13 @@ export function MessageThread({ id }: MessageThreadProps) {
     setAuthorName(visible);
     setRemaining(Math.max(0, daily - outboundTodayCount(visible)));
     setReady(true);
-  }
+  }, [id]);
 
   useEffect(() => {
     void reload();
-  }, [id]);
+  }, [reload]);
+
+  useRefreshOnFocus(reload);
 
   async function send() {
     if (!online) {

@@ -9,7 +9,8 @@ Tras el MVP en navegador (`zunela-web`), estos documentos cumplen §15.2, §15.5
 | [piloto-runbook.md](./piloto-runbook.md) | Guion de prueba interna y protocolo multi-cuenta |
 | [piloto-validacion-2b.md](./piloto-validacion-2b.md) | Guía paso a paso: SQL → env → bootstrap → §2b |
 | [piloto-50-100.md](./piloto-50-100.md) | Supabase cloud + Railway (piloto 50–100) |
-| [auth-oauth.md](./auth-oauth.md) | Google/Gmail y otros inicios sociales |
+| [auth-oauth.md](./auth-oauth.md) | Google/Gmail y otros inicios sociales (pausado) |
+| [piloto-produccion-2cuentas.md](./piloto-produccion-2cuentas.md) | Guion corto 2 cuentas en Railway |
 | [api-contratos.md](./api-contratos.md) | Contratos del slice remoto (Auth → presencia / cuenta) |
 
 **Estado del código:** piloto técnico + §2b/§6b OK en Docker local — migraciones `001`–`018`, Auth callback para correo, demo local intacta.

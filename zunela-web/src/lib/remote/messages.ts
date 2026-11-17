@@ -2,7 +2,7 @@
  * Chat privado remoto (UUID). Exige conexión accepted entre las partes (validado en app).
  */
 
-import { isRemotePersonId } from "@/lib/remote/connections";
+import { isRemotePersonId, remoteHasAcceptedConnection } from "@/lib/remote/connections";
 import { remoteIdentityAvailable } from "@/lib/remote/identity";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
@@ -69,6 +69,12 @@ export async function sendRemotePrivateMessage(
   }
   if (!isRemotePersonId(personId)) {
     return "Esta conversación no usa el chat remoto.";
+  }
+  if (!(await remoteHasAcceptedConnection(personId))) {
+    return "Solo puedes escribir cuando la conexión está aceptada.";
+  }
+  if (!body.trim()) {
+    return "Escribe un mensaje antes de enviar.";
   }
 
   const { error } = await client.from("private_messages").insert({

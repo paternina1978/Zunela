@@ -106,7 +106,7 @@ Authentication → URL Configuration:
 - [x] Auth redirects con `https://` (Site URL + `/auth/callback`)
 - [x] Primer admin cloud (bootstrap) + flujo multi-cuenta listo
 - [x] IA apagada / fail-closed (APIs y stubs)
-- [ ] Recorrer runbook §2b en producción con 2 cuentas reales
+- [ ] Recorrer [piloto-produccion-2cuentas.md](./piloto-produccion-2cuentas.md) con 2 cuentas reales
 - [ ] Google OAuth (pausado: requiere tarjeta en Google Cloud)
 
 ## 5. Fuera de alcance
