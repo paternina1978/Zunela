@@ -65,6 +65,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_wAgYL-cVGSj0wr3aNBEf7Q_r7-jQAv9
 
 (Si rotas la key en Supabase, actualiza solo la tercera.)
 
+**Importante:** `NEXT_PUBLIC_*` se incrustan en el **build** Docker (`ARG`/`ENV` en el `Dockerfile`). Tras crear o cambiar estas variables hay que **Redeploy** (nuevo build). Si en Mi cuenta dice «faltan URL o anon key — sigue local», el build no recibió la URL/key.
+
 ### 2.5 Generar dominio y desplegar
 
 1. **Settings** → **Networking** → **Generate Domain** (queda algo como `xxx.up.railway.app`).

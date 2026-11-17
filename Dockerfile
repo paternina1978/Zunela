@@ -1,5 +1,5 @@
 # HOSTNAME del contenedor se pisa al arrancar (0.0.0.0).
-# Railway inyecta NEXT_PUBLIC_* en el build como ENV (no fallar el build con checks).
+# NEXT_PUBLIC_* deben entrar como ARG/ENV en el build (Next las incrusta ahí).
 FROM node:22-bookworm-slim AS deps
 WORKDIR /app
 COPY zunela-web/package.json zunela-web/package-lock.json ./
@@ -10,7 +10,15 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY zunela-web/ ./
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV NEXT_PUBLIC_ZUNELA_BACKEND=supabase
+
+# Railway inyecta estas variables al build; ARG las hace visibles en esta etapa.
+ARG NEXT_PUBLIC_ZUNELA_BACKEND=supabase
+ARG NEXT_PUBLIC_SUPABASE_URL
+ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
+ENV NEXT_PUBLIC_ZUNELA_BACKEND=$NEXT_PUBLIC_ZUNELA_BACKEND
+ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
+ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY
+
 RUN npm run build \
   && test -f .next/standalone/server.js \
   && test -d .next/static
@@ -19,6 +27,12 @@ FROM node:22-bookworm-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+ARG NEXT_PUBLIC_ZUNELA_BACKEND=supabase
+ARG NEXT_PUBLIC_SUPABASE_URL
+ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
+ENV NEXT_PUBLIC_ZUNELA_BACKEND=$NEXT_PUBLIC_ZUNELA_BACKEND
+ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
+ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY
 RUN addgroup --system --gid 1001 nodejs \
   && adduser --system --uid 1001 nextjs
 COPY --from=builder /app/public ./public
