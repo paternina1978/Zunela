@@ -11,21 +11,30 @@ Usá **dos navegadores** o uno normal + uno privado (cada uno = una cuenta).
 2. En A → **Cuenta** → **Soy el primer administrador** (solo la primera vez, si aún no hay admin).
 3. Cuenta **B** (otra ventana): crear cuenta → perfil → intereses.
 
-## Match y chat
+## Match y chat (personas)
 
-1. En **A** → Descubrir → abrir el perfil de B → enviar interés.
-2. En **B** → Conexiones (o avisos) → **Aceptar**.  
-   Si no aparece: tocá la pestaña otra vez o volvé a Conexiones (se refresca al enfocar).
-3. En cualquiera → Mensajes → abrir el hilo → escribir.
-4. Contacto externo (correo/tel): en **ambas** cuentas iniciá la **prueba Premium** en Cuenta; luego en el chat usá Permisos.
+No hay invitación por correo entre personas. Cada cuenta se registra sola; luego se encuentran en Descubrir.
+
+1. **Todas** las cuentas: Perfil (ciudad + profesión) → Intereses (al menos 1 interés y 1 objetivo) → Guardar.
+2. En **A** → Descubrir → filtro **Personas** + **Toda Colombia** → abrir B → enviar interés.
+3. En **B** → Conexiones → **Aceptar** (si no aparece, volvé a enfocar la pestaña).
+4. Mensajes → escribir.
+5. Contacto externo: ambas en **prueba Premium** (Cuenta) → Permisos en el chat.
+
+## Comunidad
+
+1. Cualquier cuenta → Descubrir → **Crear una comunidad**.
+2. **Pública** (Gratis, con cupo): sale en Descubrir y cualquiera se une.
+3. **Privada / por invitación**: requieren prueba Premium en Cuenta; **no** salen en el listado público. En la ficha de la comunidad (acceso invitación) podés invitar a personas ya conectadas.
 
 ## Si algo falla
 
 | Síntoma | Qué hacer |
 |---------|-----------|
-| No ves a la otra persona | Confirmar que ambos completaron perfil + intereses |
-| “Conversación cerrada” | Que la otra acepte en Conexiones; luego reabrir Mensajes |
-| Ya te enviaron interés | No reenviar: ir a Conexiones y aceptar |
+| No ves a la otra persona | Perfil + intereses en **ambas**; filtros Personas + Toda Colombia; Admin → umbral afinidad = 0 |
+| Solo ves oportunidades/comunidades | Cambiar filtro a Personas |
+| “Conversación cerrada” | Aceptar en Conexiones; reabrir Mensajes |
+| Ya te enviaron interés | Ir a Conexiones y aceptar |
 | Fondo oscuro / logo viejo | Borrar datos del sitio en ese celular |
 
 Google OAuth sigue **pausado**. Acceso solo con correo y contraseña.

@@ -431,9 +431,22 @@ export function DiscoverBoard() {
       <OwnCommunities />
 
       {visible.length === 0 ? (
-        <p className="mt-10 rounded-3xl border border-line bg-white/70 px-5 py-8 text-center text-sm text-muted">
-          Nada coincide con esos filtros.
-        </p>
+        <div className="mt-10 rounded-3xl border border-line bg-white/70 px-5 py-8 text-center text-sm leading-6 text-muted">
+          <p>Nada coincide con esos filtros.</p>
+          <p className="mt-3">
+            Para ver otras cuentas: cada una debe completar{" "}
+            <Link href="/perfil" className="font-semibold text-teal hover:text-teal-deep">
+              Perfil
+            </Link>{" "}
+            e{" "}
+            <Link href="/intereses" className="font-semibold text-teal hover:text-teal-deep">
+              Intereses
+            </Link>
+            , luego aquí elige <span className="font-semibold text-navy">Personas</span> y{" "}
+            <span className="font-semibold text-navy">Toda Colombia</span> (sin búsqueda). No hay
+            “invitar por correo”: se conectan con interés desde Descubrir.
+          </p>
+        </div>
       ) : (
         <ul className="mt-6 grid gap-4 md:grid-cols-2">
           {visible.map((entry) => (
