@@ -41,7 +41,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: "#0b7a76",
-  colorScheme: "light",
+  // "only light" evita que Chrome/Android oscurezca la PWA en modo oscuro del sistema
+  colorScheme: "only light",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
