@@ -36,11 +36,16 @@
 }
 
 html {
-  background: var(--cream);
+  color-scheme: only light;
+  background-color: #f7f3eb;
+  /* gradient sólido: algunos Android no invierten si hay background-image */
+  background-image: linear-gradient(#f7f3eb, #f7f3eb);
 }
 
 body {
-  background: var(--cream);
+  color-scheme: only light;
+  background-color: #f7f3eb;
+  background-image: linear-gradient(#f7f3eb, #f7f3eb);
   color: var(--ink);
   font-family: var(--font-outfit), sans-serif;
 }

@@ -1,17 +1,10 @@
-const CACHE = "zunela-shell-v3";
+const CACHE = "zunela-shell-v4";
 const PRECACHE = [
-  "/",
   "/offline.html",
   "/logo-zunela.png",
   "/icon-192.png",
   "/icon-512.png",
   "/manifest.webmanifest",
-  "/descubrir",
-  "/matches",
-  "/mensajes",
-  "/cuenta",
-  "/perfil",
-  "/intereses",
 ];
 
 self.addEventListener("install", (event) => {
@@ -46,13 +39,14 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  // HTML siempre desde red cuando hay conexión (evita splash/login viejo oscuro).
   if (request.mode === "navigate") {
     event.respondWith(networkFirstNavigation(request));
     return;
   }
 
   if (isShellAsset(url.pathname)) {
-    event.respondWith(cacheFirst(request));
+    event.respondWith(networkFirstAsset(request));
   }
 });
 
@@ -67,20 +61,21 @@ function isShellAsset(pathname) {
   );
 }
 
-async function cacheFirst(request) {
-  const cached = await caches.match(request);
-  if (cached) {
-    return cached;
+async function networkFirstAsset(request) {
+  try {
+    const response = await fetch(request, { cache: "no-cache" });
+    const cache = await caches.open(CACHE);
+    cache.put(request, response.clone());
+    return response;
+  } catch {
+    const cached = await caches.match(request);
+    return cached || Response.error();
   }
-  const response = await fetch(request);
-  const cache = await caches.open(CACHE);
-  cache.put(request, response.clone());
-  return response;
 }
 
 async function networkFirstNavigation(request) {
   try {
-    const response = await fetch(request);
+    const response = await fetch(request, { cache: "no-cache" });
     const cache = await caches.open(CACHE);
     cache.put(request, response.clone());
     return response;
